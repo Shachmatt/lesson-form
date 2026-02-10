@@ -429,10 +429,10 @@
                 number: exerciseCounter
             });
         }
-
+    
         // === CREATE EXERCISE HTML === 
         function createExerciseHtml(exerciseId, type, template) {
-            const questionSection = type === 'Info' ? '' : `
+            const questionSection = (type === 'Info' || type === 'Conversation') ? '' : `
                     <div class="form-group">
                         <label>Otázka</label>
                         <textarea data-field="question" placeholder="Zadej otázku..."></textarea>
