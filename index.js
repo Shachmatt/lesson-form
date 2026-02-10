@@ -103,6 +103,12 @@ app.post('/submit', async (req, res) => {
                         icon: exercise.icon
                     };
                     break;
+                    case 'Conversation':
+                        exerciseData = {
+                        people: exercise.people || [],
+                        messages: exercise.messages || []
+                        };
+                        break;
             }
             
             // Insert exercise_data

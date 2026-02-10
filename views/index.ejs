@@ -350,6 +350,8 @@
                         <option value="Game">Hra (Game)</option>
                         <option value="Calc">Textová odpověď (Text Input)</option>
                         <option value="Info">Informační blok (Info)</option>
+                        <option value="Conversation">Konverzace (Conversation)</option>
+
                     </select>
                 </div>
 
@@ -398,6 +400,10 @@
             Info: {
                 name: 'Informační blok',
                 fields: ['title', 'content', 'icon']
+            },
+            Conversation: {
+                name: 'Konverzace',
+                fields: ['people', 'messages']
             }
         };
 
@@ -553,6 +559,22 @@
                             <textarea data-field="content" placeholder="Doplň vysvětlující text..."></textarea>
                         </div>
                     `;
+                    case 'Conversation':
+                    return `
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>Postavy oddělené čárkami, (holka, medved, byk)</label>
+                                <textarea data-field="people" placeholder="holka, medved, byk"></textarea>
+                            </div>
+                            <div class="form-group">
+                                <label>Zprávy oddělené čárkami</label>
+                                <textarea data-field="messages" placeholder="Popis 1, Popis 2, Popis 3"></textarea>
+                            </div>
+                        </div>
+                        <p style="margin-top: 10px; color: #850F8D; font-size: 0.9rem;">
+                            💡 Správné páry se nastavují později v aplikaci. Zde uveď pouze seznam položek a popisků.
+                        </p>
+                    `;
                     
                 default:
                     return '';
@@ -697,6 +719,11 @@
                         exercise.icon = getFieldValue(exerciseElement, 'icon');
                         delete exercise.question;
                         break;
+                    case 'Conversation':
+                        const conversationData = getConversationData(exerciseElement);
+                        exercise.people = conversationData.people;
+                        exercise.messages = conversationData.messages;
+                        break;
                 }
 
                 lesson.exercises.push(exercise);
@@ -763,7 +790,16 @@
             };
         }
 
-
+        function getConversationData(exerciseElement) {
+            const peopleRaw = getFieldValue(exerciseElement, 'people');
+            const messagesRaw = getFieldValue(exerciseElement, 'messages');
+            const people = peopleRaw ? peopleRaw.split(',').map(s => s.trim()).filter(Boolean) : [];
+            const messages = messagesRaw ? messagesRaw.split(',').map(s => s.trim()).filter(Boolean) : [];
+            return {
+                people,
+                messages
+            };
+        }
 
 
 
@@ -814,6 +850,11 @@ document.getElementById("lessonForm").addEventListener("submit", function (e) {
                 exercise.content = getFieldValue(exerciseElement, 'content');
                 exercise.icon = getFieldValue(exerciseElement, 'icon');
                 delete exercise.question;
+                break;
+            case 'Conversation':
+                const conversationData = getConversationData(exerciseElement);
+                exercise.people = conversationData.people;
+                exercise.messages = conversationData.messages;
                 break;
         }
 
