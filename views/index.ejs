@@ -351,6 +351,8 @@
                         <option value="Calc">Textová odpověď (Text Input)</option>
                         <option value="Info">Informační blok (Info)</option>
                         <option value="Conversation">Konverzace (Conversation)</option>
+                        <option value="MultiChoice">Více odpovědí (Multi Choice)</option>
+                        
 
                     </select>
                 </div>
@@ -404,6 +406,10 @@
             Conversation: {
                 name: 'Konverzace',
                 fields: ['people', 'messages']
+            },
+            MultiChoice: {
+                name: "Výběr více odpovědí",
+                fields: ['question', 'options', 'correct']
             }
         };
 
@@ -483,6 +489,29 @@
                             </div>
                         </div>
                     `;
+
+                case 'MultiChoice':
+                    return `
+                        <h4 style="color: #850F8D; margin: 20px 0 15px 0;">Možnosti odpovědí</h4>
+                        <div class="exercise-options" id="options_container">
+                            <div class="option-item">
+                                <input type="checkbox" name="correct" value="0">
+                                <input type="text" placeholder="Možnost 1" data-option="0">
+                            </div>
+                            <div class="option-item">
+                                <input type="radio" name="correct" value="1">
+                                <input type="text" placeholder="Možnost 2" data-option="1">
+                            </div>
+                            <div class="option-item">
+                                <input type="radio" name="correct" value="2">
+                                <input type="text" placeholder="Možnost 3" data-option="2">
+                            </div>
+                            <div class="option-item">
+                                <input type="radio" name="correct" value="3">
+                                <input type="text" placeholder="Možnost 4" data-option="3">
+                            </div>
+                        </div>
+                    `;    
                     
                 case 'MatchExcercise':
                     return `
@@ -591,6 +620,11 @@
                 radioButtons.forEach(radio => {
                     radio.name = `correct_option_${exerciseId}`;
                 });
+            } else if (type === 'MultiChoice') {
+                const checkBoxes = exerciseElement.querySelectorAll('input[type="checkbox"]');
+                checkBoxes.forEach(box => {
+                    box.name= `correct_option_${exerciseId}`
+                })
             }
         }
 
@@ -694,6 +728,11 @@
                         exercise.options = singleOptions.options;
                         exercise.correct_index = singleOptions.correct_index;
                         break;
+                    case 'MultiChoice': 
+                        const multiOptions = getOptionsFromMultichoice(exerciseElement);
+                        exercise.options = multiOptions.options;
+                        exercise.correct = multiOptions.correct;
+                        break;
 
                     case 'MatchExcercise':
                         const matchData = getMatchData(exerciseElement);
@@ -779,6 +818,30 @@
             };
         }
 
+        function getOptionsFromMultichoice(exerciseElement) {
+            const optionInputs = exerciseElement.querySelectorAll('input[data-option]');
+            const options = [];
+            let correct_index = [];
+            
+            optionInputs.forEach((input, index) => {
+                const value = input.value.trim();
+                if (value) {
+                    options.push(value);
+                    
+                    const radio = input.parentElement.querySelector('input[type="checkbox"]');
+                    if (radio && radio.checked) {
+                        correct.push(index);
+                    }
+                }
+            });
+            
+            return {
+                options: options,
+                correct: correct_index
+            };
+        }
+
+
         function getMatchData(exerciseElement) {
             const optionsRaw = getFieldValue(exerciseElement, 'options');
             const labelsRaw = getFieldValue(exerciseElement, 'labels');
@@ -829,6 +892,11 @@ document.getElementById("lessonForm").addEventListener("submit", function (e) {
                 const singleOptions = getOptionsFromExercise(exerciseElement);
                 exercise.options = singleOptions.options;
                 exercise.correct_index = singleOptions.correct_index;
+                break;
+            case 'MultiChoice': 
+                const multiOptions = getOptionsFromMultichoice(exerciseElement);
+                exercise.options = multiOptions.options;
+                exercise.correct = multiOptions.correct;
                 break;
             case 'MatchExcercise':
                 const matchData = getMatchData(exerciseElement);
