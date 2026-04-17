@@ -72,6 +72,12 @@ app.post('/submit', async (req, res) => {
                         correct_index: exercise.correct_index
                     };
                     break;
+                case 'MultiChoice':
+                    exerciseData = {
+                        options: exercise.options || [],
+                        correct: exercise.correct,
+                    };
+                    break;
                     
                 case 'MatchExcercise':
                     exerciseData = {
