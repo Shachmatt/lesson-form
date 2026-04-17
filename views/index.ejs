@@ -821,23 +821,23 @@
         function getOptionsFromMultichoice(exerciseElement) {
             const optionInputs = exerciseElement.querySelectorAll('input[data-option]');
             const options = [];
-            let correct_index = [];
-            
+            const correct = [];
+
             optionInputs.forEach((input, index) => {
                 const value = input.value.trim();
                 if (value) {
                     options.push(value);
-                    
-                    const radio = input.parentElement.querySelector('input[type="checkbox"]');
-                    if (radio && radio.checked) {
-                        correct.push(index);
+
+                    const checkbox = input.parentElement.querySelector('input[type="checkbox"]');
+                    if (checkbox && checkbox.checked) {
+                        correct.push(value); // store text, not index
                     }
                 }
             });
-            
+
             return {
                 options: options,
-                correct: correct_index
+                correct: correct
             };
         }
 
