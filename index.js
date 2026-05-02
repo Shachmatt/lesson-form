@@ -53,36 +53,40 @@ app.post('/submit', async (req, res) => {
         for (const exercise of data.exercises) {
             // Insert exercise
             const exerciseResult = await client.query(
-                `INSERT INTO exercises (lesson_id, type, question, feedback) 
-                 VALUES ($1, $2, $3, $4) 
+                `INSERT INTO exercises (lesson_id, type, question) 
+                 VALUES ($1, $2, $3) 
                  RETURNING id`,
-                [lessonId, exercise.type, exercise.question || null, exercise.feedback || null]
+                [lessonId, exercise.type, exercise.question || null]
             );
             
             const exerciseId = exerciseResult.rows[0].id;
             console.log(`Exercise inserted with ID: ${exerciseId}`);
             
             // Prepare exercise data based on type
-            let exerciseData = {};
-            
+    let exerciseData = {};            
             switch(exercise.type) {
                 case 'Question':
                     exerciseData = {
                         options: exercise.options || [],
-                        correct_index: exercise.correct_index
+                        correct_index: exercise.correct_index,
+                        feedback: exercise.feedback || null
+
                     };
                     break;
                 case 'MultiChoice':
                     exerciseData = {
                         options: exercise.options || [],
                         correct: exercise.correct,
+                        feedback: exercise.feedback || null
+
                     };
                     break;
                     
                 case 'MatchExcercise':
                     exerciseData = {
                         options: exercise.options || [],
-                        labels: exercise.labels || []
+                        labels: exercise.labels || [],
+                        feedback: exercise.feedback || null
                     };
                     break;
                     
@@ -91,14 +95,16 @@ app.post('/submit', async (req, res) => {
                         optionOneName: exercise.optionOneName,
                         optionTwoName: exercise.optionTwoName,
                         optionOneItems: exercise.optionOneItems || [],
-                        optionTwoItems: exercise.optionTwoItems || []
+                        optionTwoItems: exercise.optionTwoItems || [],
+                        feedback: exercise.feedback || null
                     };
                     break;
                     
                 case 'Calc':
                     exerciseData = {
                         correct: exercise.correct,
-                        typeResult: exercise.typeResult
+                        typeResult: exercise.typeResult,
+                        feedback: exercise.feedback || null
                     };
                     break;
                     
