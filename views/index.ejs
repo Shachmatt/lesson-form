@@ -385,31 +385,31 @@
         const exerciseTemplates = {
             Question: {
                 name: 'Výběr jedné odpovědi',
-                fields: ['question', 'options', 'correct_index']
+                fields: ['question', 'options', 'correct_index', 'feedback']
             },
             MatchExcercise: {
                 name: 'Párování',
-                fields: ['question', 'options', 'labels']
+                fields: ['question', 'options', 'labels', 'feedback']
             },
             Game: {
                 name: 'Hra',
-                fields: ['question', 'optionOneName', 'optionTwoName', 'optionOneItems', 'optionTwoItems']
+                fields: ['question', 'optionOneName', 'optionTwoName', 'optionOneItems', 'optionTwoItems', 'feedback']
             },
             Calc: {
                 name: 'Textová odpověď',
-                fields: ['question', 'correct', 'typeResult']
+                fields: ['question', 'correct', 'typeResult', 'feedback']
             },
             Info: {
                 name: 'Informační blok',
-                fields: ['title', 'content', 'icon']
+                fields: ['title', 'content', 'icon', 'feedback']
             },
             Conversation: {
                 name: 'Konverzace',
-                fields: ['people', 'messages']
+                fields: ['people', 'messages', 'feedback']
             },
             MultiChoice: {
                 name: "Výběr více odpovědí",
-                fields: ['question', 'options', 'correct']
+                fields: ['question', 'options', 'correct', 'feedback']
             }
         };
 
@@ -445,6 +445,15 @@
                     </div>
             `;
 
+            const feedbackSection = type === ('Info' || 'Conversation') ? '' : `
+            <div class="form-group">
+                        <label>Feedback</label>
+                        <textarea data-field="feedback" placeholder="Vyplň vysvětlení: "></textarea>
+                    </div>
+            
+            
+            `;
+
             return `
                 <div class="exercise-item" id="${exerciseId}">
                     <div class="exercise-header">
@@ -460,6 +469,7 @@
                     <div class="exercise-specific" id="${exerciseId}_specific">
                         ${getExerciseSpecificHtml(type)}
                     </div>
+                    ${feedbackSection}
                 </div>
             `;
         }
@@ -718,7 +728,8 @@
 
                 const exercise = {
                     type: exerciseRef.type,
-                    question: getFieldValue(exerciseElement, 'question')
+                    question: getFieldValue(exerciseElement, 'question'),
+                    feedback: getFieldValue(exerciseElement, 'feedback')
                 };
 
                 // Add type-specific fields
@@ -884,7 +895,9 @@ document.getElementById("lessonForm").addEventListener("submit", function (e) {
 
         const exercise = {
             type: exerciseRef.type,
-            question: getFieldValue(exerciseElement, 'question')
+            question: getFieldValue(exerciseElement, 'question'),
+            feedback: getFieldValue(exerciseElement, 'feedback')
+
         };
 
         switch(exerciseRef.type) {
@@ -918,6 +931,7 @@ document.getElementById("lessonForm").addEventListener("submit", function (e) {
                 exercise.content = getFieldValue(exerciseElement, 'content');
                 exercise.icon = getFieldValue(exerciseElement, 'icon');
                 delete exercise.question;
+                delete exercise.feedback;
                 break;
             case 'Conversation':
                 const conversationData = getConversationData(exerciseElement);

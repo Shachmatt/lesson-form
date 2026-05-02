@@ -53,10 +53,10 @@ app.post('/submit', async (req, res) => {
         for (const exercise of data.exercises) {
             // Insert exercise
             const exerciseResult = await client.query(
-                `INSERT INTO exercises (lesson_id, type, question) 
+                `INSERT INTO exercises (lesson_id, type, question, feedback) 
                  VALUES ($1, $2, $3) 
                  RETURNING id`,
-                [lessonId, exercise.type, exercise.question || null]
+                [lessonId, exercise.type, exercise.question || null, exercise.feedback || null]
             );
             
             const exerciseId = exerciseResult.rows[0].id;
