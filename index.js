@@ -54,7 +54,7 @@ app.post('/submit', async (req, res) => {
             // Insert exercise
             const exerciseResult = await client.query(
                 `INSERT INTO exercises (lesson_id, type, question, feedback) 
-                 VALUES ($1, $2, $3) 
+                 VALUES ($1, $2, $3, $4) 
                  RETURNING id`,
                 [lessonId, exercise.type, exercise.question || null, exercise.feedback || null]
             );

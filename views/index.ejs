@@ -445,7 +445,7 @@
                     </div>
             `;
 
-            const feedbackSection = type === ('Info' || 'Conversation') ? '' : `
+            const feedbackSection = (type === 'Info' || type === 'Conversation') ? '' : `
             <div class="form-group">
                         <label>Feedback</label>
                         <textarea data-field="feedback" placeholder="Vyplň vysvětlení: "></textarea>
