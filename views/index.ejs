@@ -352,7 +352,7 @@
                         <option value="Info">Informační blok (Info)</option>
                         <option value="Conversation">Konverzace (Conversation)</option>
                         <option value="MultiChoice">Více odpovědí (Multi Choice)</option>
-                        
+                        <option value="VIP">VIP — Konfigurace simulátoru (APP_DATA)</option>
 
                     </select>
                 </div>
@@ -410,6 +410,10 @@
             MultiChoice: {
                 name: "Výběr více odpovědí",
                 fields: ['question', 'options', 'correct', 'feedback']
+            },
+            VIP: {
+                name: 'VIP — Konfigurace APP_DATA',
+                fields: ['appData']
             }
         };
 
@@ -438,20 +442,20 @@
     
         // === CREATE EXERCISE HTML === 
         function createExerciseHtml(exerciseId, type, template) {
-            const questionSection = (type === 'Info' || type==='conversation') ? '' : `
+            const questionSection = (type === 'Info' || type==='conversation' || type === 'VIP') ? '' : `
                     <div class="form-group">
                         <label>Otázka</label>
                         <textarea data-field="question" placeholder="Zadej otázku..."></textarea>
                     </div>
             `;
 
-            const feedbackSection = (type === 'Info' || type === 'Conversation') ? '' : `
+            const feedbackSection = (type === 'Info' || type === 'Conversation' || type === 'VIP') ? '' : `
             <div class="form-group">
                         <label>Feedback</label>
                         <textarea data-field="feedback" placeholder="Vyplň vysvětlení: "></textarea>
                     </div>
-            
-            
+
+
             `;
 
             return `
@@ -614,10 +618,243 @@
                             💡 Správné páry se nastavují později v aplikaci. Zde uveď pouze seznam položek a popisků.
                         </p>
                     `;
-                    
+
+                case 'VIP':
+                    return `
+                        <div class="vip-block" data-field="appData">
+                            <h4 style="color: #850F8D; margin: 20px 0 15px 0;">🌐 Globální parametry simulace</h4>
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label>daysBefore (forward-sim length)</label>
+                                    <input type="number" data-vip="daysBefore" value="200">
+                                </div>
+                                <div class="form-group">
+                                    <label>futureDays</label>
+                                    <input type="number" data-vip="futureDays" value="200">
+                                </div>
+                            </div>
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label>histDays</label>
+                                    <input type="number" data-vip="histDays" value="200">
+                                </div>
+                                <div class="form-group">
+                                    <label>valueImp (mean-reversion strength)</label>
+                                    <input type="number" step="0.001" data-vip="valueImp" value="0.03">
+                                </div>
+                            </div>
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label>volBase (base volatility)</label>
+                                    <input type="number" step="0.001" data-vip="volBase" value="0.05">
+                                </div>
+                                <div class="form-group">
+                                    <label>fcfVolatility</label>
+                                    <input type="number" step="0.01" data-vip="fcfVolatility" value="0.1">
+                                </div>
+                            </div>
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label>animSpeed (ms per tick)</label>
+                                    <input type="number" data-vip="animSpeed" value="40">
+                                </div>
+                                <div class="form-group">
+                                    <label>startingBalance</label>
+                                    <input type="number" step="0.01" data-vip="startingBalance" value="10000">
+                                </div>
+                            </div>
+
+                            <h4 style="color: #850F8D; margin: 30px 0 15px 0;">📈 EV/EBITDA referenční násobky (industryMultiples)</h4>
+                            <div class="vip-multiples-container"></div>
+                            <button type="button" class="btn btn-secondary" onclick="addVipMultiple(this)">➕ Přidat odvětví</button>
+
+                            <h4 style="color: #850F8D; margin: 30px 0 15px 0;">🏢 Společnosti (companies)</h4>
+                            <p style="color: #850F8D; font-size: 0.9rem; margin-bottom: 15px;">
+                                💡 Lze přidat libovolný počet společností. Všechny peněžní hodnoty jsou v milionech.
+                            </p>
+                            <div class="vip-companies-container"></div>
+                            <button type="button" class="btn btn-secondary" onclick="addVipCompany(this)">➕ Přidat společnost</button>
+                        </div>
+                    `;
+
                 default:
                     return '';
             }
+        }
+
+        // === VIP HELPERS ===
+
+        // Render one industryMultiples row
+        function vipMultipleHtml(sector = '', low = '', high = '') {
+            return `
+                <div class="vip-multiple option-item" style="gap: 12px; flex-wrap: wrap;">
+                    <input type="text"   data-vip-mul="sector" placeholder="Např. Technology / SaaS" value="${sector}" style="flex: 2;">
+                    <input type="number" data-vip-mul="low"    placeholder="low"  value="${low}"  step="0.1" style="flex: 1; max-width: 100px;">
+                    <input type="number" data-vip-mul="high"   placeholder="high" value="${high}" step="0.1" style="flex: 1; max-width: 100px;">
+                    <button type="button" class="btn btn-danger" onclick="this.parentElement.remove()">❌</button>
+                </div>
+            `;
+        }
+
+        // Add a row to the multiples list inside the VIP block this button belongs to
+        function addVipMultiple(button) {
+            const container = button.parentElement.querySelector('.vip-multiples-container');
+            container.insertAdjacentHTML('beforeend', vipMultipleHtml());
+        }
+
+        // Render one company card
+        function vipCompanyHtml(c = {}) {
+            return `
+                <div class="vip-company" style="background:#fff; border:2px solid #C738BD; border-radius:10px; padding:20px; margin-bottom:15px;">
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
+                        <strong style="color:#850F8D;">Společnost</strong>
+                        <button type="button" class="btn btn-danger" onclick="this.closest('.vip-company').remove()">🗑 Odstranit</button>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>name</label>
+                            <input type="text" data-vip-co="name" value="${c.name || ''}" placeholder="Např. Investigo a.s.">
+                        </div>
+                        <div class="form-group">
+                            <label>color</label>
+                            <input type="text" data-vip-co="color" value="${c.color || '#850F8D'}" placeholder="#850F8D">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>description</label>
+                        <textarea data-vip-co="description" placeholder="Popis společnosti...">${c.description || ''}</textarea>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>type (1=NAV, 2=DCF, 3=Gordon, 4=Market)</label>
+                            <select data-vip-co="type">
+                                <option value="1" ${c.type===1?'selected':''}>1 — NAV (asset-based)</option>
+                                <option value="2" ${c.type===2?'selected':''}>2 — DCF</option>
+                                <option value="3" ${c.type===3?'selected':''}>3 — Gordon Growth</option>
+                                <option value="4" ${c.type===4?'selected':''}>4 — Market Multiple</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>startPrice</label>
+                            <input type="number" step="0.01" data-vip-co="startPrice" value="${c.startPrice ?? ''}" placeholder="100">
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>stockNum (millions of shares)</label>
+                            <input type="number" step="0.01" data-vip-co="stockNum" value="${c.stockNum ?? ''}" placeholder="1.5">
+                        </div>
+                        <div class="form-group">
+                            <label>FCF (3 hodnoty oddělené čárkou)</label>
+                            <input type="text" data-vip-co="FCF" value="${Array.isArray(c.FCF) ? c.FCF.join(', ') : ''}" placeholder="30, 33, 36">
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>YoY (discount rate)</label>
+                            <input type="number" step="0.001" data-vip-co="YoY" value="${c.YoY ?? ''}" placeholder="0.10">
+                        </div>
+                        <div class="form-group">
+                            <label>growth (terminal growth)</label>
+                            <input type="number" step="0.001" data-vip-co="growth" value="${c.growth ?? ''}" placeholder="0.04">
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>assets</label>
+                            <input type="number" step="0.01" data-vip-co="assets" value="${c.assets ?? ''}" placeholder="150">
+                        </div>
+                        <div class="form-group">
+                            <label>debts</label>
+                            <input type="number" step="0.01" data-vip-co="debts" value="${c.debts ?? ''}" placeholder="20">
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>EBITDA</label>
+                            <input type="number" step="0.01" data-vip-co="EBITDA" value="${c.EBITDA ?? ''}" placeholder="55">
+                        </div>
+                        <div class="form-group">
+                            <label>field (EV/EBITDA multiple)</label>
+                            <input type="number" step="0.1" data-vip-co="field" value="${c.field ?? ''}" placeholder="3">
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>cash</label>
+                            <input type="number" step="0.01" data-vip-co="cash" value="${c.cash ?? ''}" placeholder="4">
+                        </div>
+                        <div class="form-group">
+                            <label>dividend</label>
+                            <input type="number" step="0.01" data-vip-co="dividend" value="${c.dividend ?? ''}" placeholder="10">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>divGrowth</label>
+                        <input type="number" step="0.001" data-vip-co="divGrowth" value="${c.divGrowth ?? ''}" placeholder="0.02">
+                    </div>
+                </div>
+            `;
+        }
+
+        function addVipCompany(button) {
+            const container = button.parentElement.querySelector('.vip-companies-container');
+            container.insertAdjacentHTML('beforeend', vipCompanyHtml());
+        }
+
+        // Collect all VIP data (global params, multiples, companies) from one exercise element
+        function collectVipData(exerciseElement) {
+            const vipBlock = exerciseElement.querySelector('[data-field="appData"]');
+            if (!vipBlock) return null;
+
+            const num = (el) => {
+                if (!el || el.value === '') return null;
+                const n = parseFloat(el.value);
+                return isNaN(n) ? null : n;
+            };
+
+            // Global params
+            const globals = {};
+            vipBlock.querySelectorAll('[data-vip]').forEach(el => {
+                globals[el.dataset.vip] = num(el);
+            });
+
+            // Industry multiples
+            const industryMultiples = [];
+            vipBlock.querySelectorAll('.vip-multiple').forEach(row => {
+                const sector = row.querySelector('[data-vip-mul="sector"]').value.trim();
+                const low    = num(row.querySelector('[data-vip-mul="low"]'));
+                const high   = num(row.querySelector('[data-vip-mul="high"]'));
+                if (sector) industryMultiples.push({ sector, low, high });
+            });
+
+            // Companies
+            const companies = [];
+            vipBlock.querySelectorAll('.vip-company').forEach(card => {
+                const get = (key) => card.querySelector(`[data-vip-co="${key}"]`);
+                const fcfRaw = get('FCF') ? get('FCF').value : '';
+                const FCF = fcfRaw.split(',').map(s => parseFloat(s.trim())).filter(n => !isNaN(n));
+                companies.push({
+                    name:        get('name')        ? get('name').value.trim()        : '',
+                    color:       get('color')       ? get('color').value.trim()       : '',
+                    description: get('description') ? get('description').value.trim() : '',
+                    type:        get('type')        ? parseInt(get('type').value, 10) : null,
+                    stockNum:    num(get('stockNum')),
+                    FCF:         FCF,
+                    YoY:         num(get('YoY')),
+                    growth:      num(get('growth')),
+                    assets:      num(get('assets')),
+                    debts:       num(get('debts')),
+                    EBITDA:      num(get('EBITDA')),
+                    field:       num(get('field')),
+                    cash:        num(get('cash')),
+                    dividend:    num(get('dividend')),
+                    divGrowth:   num(get('divGrowth')),
+                    startPrice:  num(get('startPrice'))
+                });
+            });
+
+            return { ...globals, industryMultiples, companies };
         }
 
         // === INITIALIZE EXERCISE TYPE === 
@@ -774,6 +1011,11 @@
                         exercise.people = conversationData.people;
                         exercise.messages = conversationData.messages;
                         break;
+                    case 'VIP':
+                        exercise.appData = collectVipData(exerciseElement);
+                        delete exercise.question;
+                        delete exercise.feedback;
+                        break;
                 }
 
                 lesson.exercises.push(exercise);
@@ -789,9 +1031,9 @@
                 alert('Prosím přidejte alespoň jedno cvičení!');
                 return;
             }
-            
 
-           
+
+
         }
 
         // === HELPER FUNCTIONS === 
@@ -937,6 +1179,11 @@ document.getElementById("lessonForm").addEventListener("submit", function (e) {
                 const conversationData = getConversationData(exerciseElement);
                 exercise.people = conversationData.people;
                 exercise.messages = conversationData.messages;
+                break;
+            case 'VIP':
+                exercise.appData = collectVipData(exerciseElement);
+                delete exercise.question;
+                delete exercise.feedback;
                 break;
         }
 

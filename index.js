@@ -121,6 +121,10 @@ app.post('/submit', async (req, res) => {
                         messages: exercise.messages || []
                         };
                         break;
+                    case 'VIP':
+                        // Full APP_DATA payload (global params + industryMultiples + companies[])
+                        exerciseData = exercise.appData || {};
+                        break;
             }
             
             // Insert exercise_data
