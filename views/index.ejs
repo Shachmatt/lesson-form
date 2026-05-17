@@ -745,9 +745,13 @@
                             <input type="number" step="0.01" data-vip-co="stockNum" value="${c.stockNum ?? ''}" placeholder="1.5">
                         </div>
                         <div class="form-group">
-                            <label>FCF (3 hodnoty oddělené čárkou)</label>
+                            <label>FCF — next 3 years (oddělené čárkou)</label>
                             <input type="text" data-vip-co="FCF" value="${Array.isArray(c.FCF) ? c.FCF.join(', ') : ''}" placeholder="30, 33, 36">
                         </div>
+                    </div>
+                    <div class="form-group">
+                        <label>FCFPast — past 3 years (3yr ago, 2yr ago, 1yr ago)</label>
+                        <input type="text" data-vip-co="FCFPast" value="${Array.isArray(c.FCFPast) ? c.FCFPast.join(', ') : ''}" placeholder="10, 30, 15">
                     </div>
                     <div class="form-row">
                         <div class="form-group">
@@ -832,15 +836,18 @@
             const companies = [];
             vipBlock.querySelectorAll('.vip-company').forEach(card => {
                 const get = (key) => card.querySelector(`[data-vip-co="${key}"]`);
-                const fcfRaw = get('FCF') ? get('FCF').value : '';
-                const FCF = fcfRaw.split(',').map(s => parseFloat(s.trim())).filter(n => !isNaN(n));
+                const parseList = (key) => {
+                    const raw = get(key) ? get(key).value : '';
+                    return raw.split(',').map(s => parseFloat(s.trim())).filter(n => !isNaN(n));
+                };
                 companies.push({
                     name:        get('name')        ? get('name').value.trim()        : '',
                     color:       get('color')       ? get('color').value.trim()       : '',
                     description: get('description') ? get('description').value.trim() : '',
                     type:        get('type')        ? parseInt(get('type').value, 10) : null,
                     stockNum:    num(get('stockNum')),
-                    FCF:         FCF,
+                    FCF:         parseList('FCF'),
+                    FCFPast:     parseList('FCFPast'),
                     YoY:         num(get('YoY')),
                     growth:      num(get('growth')),
                     assets:      num(get('assets')),
