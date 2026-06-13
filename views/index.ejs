@@ -321,6 +321,10 @@
                     <label for="lessonIntro">Úvod lekce</label>
                     <textarea id="lessonIntro" placeholder="Krátký popis toho, co se studenti naučí..."></textarea>
                 </div>
+                <div class="form-group">
+                    <label for="summary">Shrnutí</label>
+                    <textarea id="summary" placeholder="Shrnutí toho, co se studenti naučili..."></textarea>
+                </div>
             </div>
 
             <!-- === BOT REPLIES === -->
@@ -963,6 +967,7 @@
             const lesson = {
                 title: document.getElementById('lessonTitle').value,
                 intro: document.getElementById('lessonIntro').value,
+                summary: document.getElementById('summary').value,
                 beforeExercise: document.getElementById('beforeExercise').value,
                 outro: document.getElementById('outro').value,
                 exercises: []
@@ -1136,6 +1141,7 @@ document.getElementById("lessonForm").addEventListener("submit", function (e) {
     const lesson = {
         title: document.getElementById('lessonTitle').value,
         intro: document.getElementById('lessonIntro').value,
+        summary: document.getElementById('summary').value,
         beforeExercise: document.getElementById('beforeExercise').value,
         outro: document.getElementById('outro').value,
         sectionId: document.getElementById('sectionId').value || null,

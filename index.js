@@ -40,10 +40,10 @@ app.post('/submit', async (req, res) => {
         
         // Insert lesson (včetně section_id pokud dorazí)
         const lessonResult = await client.query(
-            `INSERT INTO lessons (title, intro, before_exercise, outro, section_id) 
-             VALUES ($1, $2, $3, $4, $5) 
+            `INSERT INTO lessons (title, intro, summary, before_exercise, outro, section_id)
+             VALUES ($1, $2, $3, $4, $5, $6)
              RETURNING id`,
-            [data.title, data.intro, data.beforeExercise, data.outro, data.sectionId || null]
+            [data.title, data.intro, data.summary || null, data.beforeExercise, data.outro, data.sectionId || null]
         );
         
         const lessonId = lessonResult.rows[0].id;
